@@ -47,7 +47,7 @@ async def on_startup():
 
 
 @app.get('/v1/marker/')
-@cache(expire=60, key_builder=build_get_marker_builder)
+@cache(expire=3600, key_builder=build_get_marker_builder)
 async def get_map_markers(req: Request):
     print('not-cached')
     conn = req.scope['pg_connection']
