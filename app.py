@@ -38,7 +38,6 @@ async def on_startup():
 @app.get('/v1/marker/')
 @cache(expire=60)
 async def get_map_markers():
-    print('not-cached')
     conn = await pool.acquire()
     data = await handle_get_map_markers(conn)
     await pool.release(conn)
