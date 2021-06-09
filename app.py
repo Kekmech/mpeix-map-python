@@ -6,9 +6,7 @@ from fastapi.responses import UJSONResponse
 from fastapi import Request
 from fastapi import FastAPI
 from database.connection import create_pg_pool
-from service.utils import build_get_marker_builder
 from views.handle_map_markers import handle_get_map_markers
-import uvicorn
 
 app = FastAPI(
     title='Map MicroService',
@@ -16,15 +14,6 @@ app = FastAPI(
     default_response_class=UJSONResponse
 
 )
-
-
-@app.middleware('http')
-async def add_connection(req: Request, call_next):
-    conn = await pool.acquire()
-    req.scope['pg_connection'] = conn
-    response = await call_next(req)
-    await pool.release(conn)
-    return response
 
 
 @app.exception_handler(500)
@@ -47,10 +36,12 @@ async def on_startup():
 
 
 @app.get('/v1/marker/')
-@cache(expire=3600, key_builder=build_get_marker_builder)
-async def get_map_markers(req: Request):
-    conn = req.scope['pg_connection']
+@cache(expire=60)
+async def get_map_markers():
+    print('not-cached')
+    conn = await pool.acquire()
     data = await handle_get_map_markers(conn)
+    await pool.release(conn)
     return {
         'markers': data
     }
